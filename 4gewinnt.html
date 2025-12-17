@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vier Gewinnt</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Raleway:wght@300;500;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background: linear-gradient(to bottom, #f8f6f4 0%, #e8e4df 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2d4a3e;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      font-weight: 400;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .game-button {
+      font-family: 'Raleway', sans-serif;
+      background: #2d4a3e;
+      color: #ffffff;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 15px rgba(45, 74, 62, 0.3);
+    }
+
+    .game-button:hover {
+      background: #a89968;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(168, 153, 104, 0.4);
+    }
+
+    .game-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(45, 74, 62, 0.95);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .game-modal.active {
+      display: flex;
+    }
+
+    .game-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      background: #f8f6f4;
+      border-radius: 12px;
+      border: 2px solid #d4cfc7;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      padding: 20px;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #2d4a3e;
+      border-radius: 8px;
+    }
+
+    .player-turn {
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .turn-label {
+      font-size: 0.9em;
+      font-weight: 300;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .turn-value {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .player-indicator {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .player-indicator.red {
+      background: linear-gradient(135deg, #d4747a 0%, #b85e64 100%);
+    }
+
+    .player-indicator.yellow {
+      background: linear-gradient(135deg, #a89968 0%, #8a7848 100%);
+    }
+
+    .game-board {
+      background: #2d4a3e;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: #f8f6f4;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .cell:hover {
+      background: #e8e4df;
+      transform: scale(1.05);
+    }
+
+    .cell.filled {
+      cursor: default;
+    }
+
+    .cell.filled:hover {
+      transform: scale(1);
+    }
+
+    .disc {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      animation: drop 0.4s ease-out;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .disc.red {
+      background: linear-gradient(135deg, #d4747a 0%, #b85e64 100%);
+    }
+
+    .disc.yellow {
+      background: linear-gradient(135deg, #a89968 0%, #8a7848 100%);
+    }
+
+    .disc.winning {
+      animation: pulse 0.6s ease-in-out infinite;
+    }
+
+    @keyframes drop {
+      0% {
+        transform: translateY(-600px);
+      }
+      60% {
+        transform: translateY(5px);
+      }
+      80% {
+        transform: translateY(-2px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+      }
+    }
+
+    .game-result {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 100;
+      min-width: 300px;
+      max-width: 90%;
+    }
+
+    .game-result.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .game-result h2 {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2d4a3e;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    .game-result p {
+      font-family: 'Raleway', sans-serif;
+      color: #4a4a4a;
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .winner-indicator {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 20px auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .result-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .close-game-btn, .restart-btn {
+      font-family: 'Raleway', sans-serif;
+      background: #2d4a3e;
+      color: #ffffff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .close-game-btn:hover, .restart-btn:hover {
+      background: #a89968;
+    }
+
+    .restart-btn {
+      background: #a89968;
+    }
+
+    .restart-btn:hover {
+      background: #2d4a3e;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -40%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+
+      .game-container {
+        padding: 15px;
+      }
+
+      .board-grid {
+        gap: 8px;
+      }
+
+      .game-result {
+        padding: 30px 20px;
+      }
+
+      .game-result h2 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Vier Gewinnt</h1>
+  <button class="game-button" onclick="openGame()">Spiel starten</button>
+
+  <div class="game-modal" id="gameModal">
+    <div class="game-container">
+      <div class="game-header">
+        <div class="player-turn">
+          <div class="turn-label">Am Zug</div>
+          <div class="turn-value" id="currentPlayer">
+            <span class="player-indicator red"></span>
+            <span>Rot</span>
+          </div>
+        </div>
+      </div>
+      <div class="game-board">
+        <div class="board-grid" id="boardGrid"></div>
+      </div>
+      <div class="game-result" id="gameResult">
+        <h2 id="resultTitle">Gewonnen! Ich hoffe das war henrike :)</h2>
+        <div class="winner-indicator" id="winnerIndicator"></div>
+        <p id="resultMessage"></p>
+        <div class="result-buttons">
+          <button class="restart-btn" onclick="restartGame()">Nochmal</button>
+          <button class="close-game-btn" onclick="closeGame()">Schließen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ROWS = 6;
+    const COLS = 7;
+    let board = [];
+    let currentPlayer = 'red';
+    let gameActive = false;
+    let cells = [];
+
+    function openGame() {
+      document.getElementById('gameModal').classList.add('active');
+      initGame();
+    }
+
+    function initGame() {
+      // Reset board
+      board = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+      currentPlayer = 'red';
+      gameActive = true;
+      cells = [];
+
+      document.getElementById('gameResult').classList.remove('active');
+      updatePlayerDisplay();
+
+      // Create board
+      const boardGrid = document.getElementById('boardGrid');
+      boardGrid.innerHTML = '';
+
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          cell.addEventListener('click', () => handleCellClick(col));
+          boardGrid.appendChild(cell);
+          
+          if (!cells[col]) cells[col] = [];
+          cells[col][row] = cell;
+        }
+      }
+    }
+
+    function updatePlayerDisplay() {
+      const display = document.getElementById('currentPlayer');
+      if (currentPlayer === 'red') {
+        display.innerHTML = '<span class="player-indicator red"></span><span>Rot</span>';
+      } else {
+        display.innerHTML = '<span class="player-indicator yellow"></span><span>Gelb</span>';
+      }
+    }
+
+    function handleCellClick(col) {
+      if (!gameActive) return;
+
+      // Find the lowest empty row in this column
+      let targetRow = -1;
+      for (let row = ROWS - 1; row >= 0; row--) {
+        if (board[row][col] === null) {
+          targetRow = row;
+          break;
+        }
+      }
+
+      // Column is full
+      if (targetRow === -1) return;
+
+      // Place disc
+      board[targetRow][col] = currentPlayer;
+      const cell = cells[col][targetRow];
+      cell.classList.add('filled');
+
+      const disc = document.createElement('div');
+      disc.className = `disc ${currentPlayer}`;
+      cell.appendChild(disc);
+
+      // Check for win
+      if (checkWin(targetRow, col)) {
+        gameActive = false;
+        highlightWinningDiscs(targetRow, col);
+        setTimeout(() => endGame(currentPlayer), 800);
+        return;
+      }
+
+      // Check for draw
+      if (checkDraw()) {
+        gameActive = false;
+        setTimeout(() => endGame('draw'), 500);
+        return;
+      }
+
+      // Switch player
+      currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+      updatePlayerDisplay();
+    }
+
+    function checkWin(row, col) {
+      const player = board[row][col];
+      
+      // Check horizontal
+      let count = 1;
+      // Check left
+      for (let c = col - 1; c >= 0 && board[row][c] === player; c--) count++;
+      // Check right
+      for (let c = col + 1; c < COLS && board[row][c] === player; c++) count++;
+      if (count >= 4) return true;
+
+      // Check vertical
+      count = 1;
+      // Check down
+      for (let r = row + 1; r < ROWS && board[r][col] === player; r++) count++;
+      if (count >= 4) return true;
+
+      // Check diagonal (top-left to bottom-right)
+      count = 1;
+      // Check up-left
+      for (let r = row - 1, c = col - 1; r >= 0 && c >= 0 && board[r][c] === player; r--, c--) count++;
+      // Check down-right
+      for (let r = row + 1, c = col + 1; r < ROWS && c < COLS && board[r][c] === player; r++, c++) count++;
+      if (count >= 4) return true;
+
+      // Check diagonal (top-right to bottom-left)
+      count = 1;
+      // Check up-right
+      for (let r = row - 1, c = col + 1; r >= 0 && c < COLS && board[r][c] === player; r--, c++) count++;
+      // Check down-left
+      for (let r = row + 1, c = col - 1; r < ROWS && c >= 0 && board[r][c] === player; r++, c--) count++;
+      if (count >= 4) return true;
+
+      return false;
+    }
+
+    function highlightWinningDiscs(row, col) {
+      const player = board[row][col];
+      const winningCells = [[row, col]];
+
+      // Find all winning positions
+      const directions = [
+        [[0, -1], [0, 1]],  // horizontal
+        [[-1, 0], [1, 0]],  // vertical
+        [[-1, -1], [1, 1]], // diagonal \
+        [[-1, 1], [1, -1]]  // diagonal /
+      ];
+
+      for (const [dir1, dir2] of directions) {
+        const line = [[row, col]];
+        
+        // Check first direction
+        let r = row + dir1[0], c = col + dir1[1];
+        while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === player) {
+          line.push([r, c]);
+          r += dir1[0];
+          c += dir1[1];
+        }
+        
+        // Check second direction
+        r = row + dir2[0];
+        c = col + dir2[1];
+        while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === player) {
+          line.push([r, c]);
+          r += dir2[0];
+          c += dir2[1];
+        }
+
+        if (line.length >= 4) {
+          line.forEach(([r, c]) => {
+            const disc = cells[c][r].querySelector('.disc');
+            if (disc) disc.classList.add('winning');
+          });
+          break;
+        }
+      }
+    }
+
+    function checkDraw() {
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          if (board[row][col] === null) return false;
+        }
+      }
+      return true;
+    }
+
+    function endGame(winner) {
+      const winnerIndicator = document.getElementById('winnerIndicator');
+      
+      if (winner === 'draw') {
+        document.getElementById('resultTitle').textContent = 'Unentschieden!';
+        document.getElementById('resultMessage').innerHTML = 
+          'Kein Gewinner, wie traurig :(';
+        winnerIndicator.style.display = 'none';
+      } else {
+        document.getElementById('resultTitle').textContent = 'Gewonnen! Ich hoffe das war henrike :)';
+        
+        if (winner === 'red') {
+          document.getElementById('resultMessage').innerHTML = 
+            '<strong style="color: #d4747a;">Rot</strong> hat gewonnen';
+          winnerIndicator.className = 'winner-indicator';
+          winnerIndicator.style.background = 'linear-gradient(135deg, #d4747a 0%, #b85e64 100%)';
+        } else {
+          document.getElementById('resultMessage').innerHTML = 
+            '<strong style="color: #a89968;">Gelb</strong> hat gewonnen';
+          winnerIndicator.className = 'winner-indicator';
+          winnerIndicator.style.background = 'linear-gradient(135deg, #a89968 0%, #8a7848 100%)';
+        }
+        winnerIndicator.style.display = 'block';
+      }
+
+      document.getElementById('gameResult').classList.add('active');
+    }
+
+    function restartGame() {
+      initGame();
+    }
+
+    function closeGame() {
+      gameActive = false;
+      document.getElementById('gameModal').classList.remove('active');
+    }
+
+    // Prevent accidental zoom on double-tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+</body>
+</html>

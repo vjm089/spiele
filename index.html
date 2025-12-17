@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spielesammlung ❤️</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Raleway:wght@300;500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background: linear-gradient(to bottom, #f8f6f4 0%, #e8e4df 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2d4a3e;
+      font-size: 2.5em;
+      margin-bottom: 40px;
+      font-weight: 400;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .games-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .game-card {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 2px solid #d4cfc7;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(45, 74, 62, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .game-icon {
+      background: #2d4a3e;
+      height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3.5em;
+    }
+
+    .game-info {
+      padding: 20px;
+    }
+
+    .game-title {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2d4a3e;
+      font-size: 1.6em;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .game-button {
+      font-family: 'Raleway', sans-serif;
+      background: #2d4a3e;
+      color: #ffffff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(45, 74, 62, 0.3);
+    }
+
+    .game-button:hover {
+      background: #a89968;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2em;
+        margin-bottom: 30px;
+      }
+
+      .games-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Spiele ❤️</h1>
+
+  <div class="games-container">
+    <div class="game-card">
+      <div class="game-icon">💕</div>
+      <div class="game-info">
+        <h2 class="game-title">Herzchen sammelen</h2>
+        <button class="game-button" onclick="window.location.href='spiel.html'">Spielen</button>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="game-icon">XO</div>
+      <div class="game-info">
+        <h2 class="game-title">Tic-Tac-To</h2>
+        <button class="game-button" onclick="window.location.href='tik.html'">Spielen</button>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="game-icon">🐍</div>
+      <div class="game-info">
+        <h2 class="game-title">Snake</h2>
+        <button class="game-button" onclick="window.location.href='snake.html'">Spielen</button>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="game-icon">💝</div>
+      <div class="game-info">
+        <h2 class="game-title">Memory</h2>
+        <button class="game-button" onclick="window.location.href='memory.html'">Spielen</button>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="game-icon">🔴</div>
+      <div class="game-info">
+        <h2 class="game-title">4-Gewinnt</h2>
+        <button class="game-button" onclick="window.location.href='4gewinnt.html'">Spielen</button>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="game-icon">🎯</div>
+      <div class="game-info">
+        <h2 class="game-title">2048</h2>
+        <button class="game-button" onclick="window.location.href='2048.html'">Spielen</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

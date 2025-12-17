@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💕 Herzchen-Spiel</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Raleway:wght@300;500&display=swap');
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background: linear-gradient(to bottom, #f8f6f4 0%, #e8e4df 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2d4a3e;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      font-weight: 400;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .game-button {
+      font-family: 'Raleway', sans-serif;
+      background: #2d4a3e;
+      color: #ffffff;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 15px rgba(45, 74, 62, 0.3);
+    }
+
+    .game-button:hover {
+      background: #a89968;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(168, 153, 104, 0.4);
+    }
+
+    .game-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(45, 74, 62, 0.95);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game-modal.active {
+      display: flex;
+    }
+
+    .game-container {
+      position: relative;
+      width: 90%;
+      max-width: 800px;
+      height: 600px;
+      background: #f8f6f4;
+      border-radius: 12px;
+      border: 2px solid #d4cfc7;
+      overflow: hidden;
+    }
+
+    .game-header {
+      background: #2d4a3e;
+      color: #ffffff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Raleway', sans-serif;
+    }
+
+    .game-score, .game-timer {
+      font-size: 1.5em;
+      font-weight: 500;
+    }
+
+    .game-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px);
+      overflow: hidden;
+      cursor: none;
+    }
+
+    .game-heart {
+      position: absolute;
+      font-size: 2em;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s;
+      color: #a89968;
+    }
+
+    .basket {
+      position: absolute;
+      bottom: 20px;
+      width: 80px;
+      height: 80px;
+      font-size: 3em;
+      pointer-events: none;
+      user-select: none;
+      transform: translateX(-50%);
+    }
+
+    .game-result {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    .game-result.active {
+      display: block;
+    }
+
+    .game-result h2 {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2d4a3e;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    .game-result p {
+      font-family: 'Raleway', sans-serif;
+      color: #4a4a4a;
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .game-result-score {
+      font-size: 3em;
+      color: #a89968;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .close-game-btn {
+      font-family: 'Raleway', sans-serif;
+      background: #2d4a3e;
+      color: #ffffff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .close-game-btn:hover {
+      background: #a89968;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(-150px) rotate(180deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Ein kleines Spiel für dich ❤️</h1>
+  <button class="game-button" onclick="startGame()">Spiel starten</button>
+
+  <div class="game-modal" id="gameModal">
+    <div class="game-container">
+      <div class="game-header">
+        <div class="game-score">Score: <span id="score">0</span></div>
+        <div class="game-timer">Zeit: <span id="timer">35</span>s</div>
+      </div>
+      <div class="game-area" id="gameArea">
+        <div class="basket" id="basket">🧺</div>
+      </div>
+      <div class="game-result" id="gameResult">
+        <h2 id="resultTitle">Zeit abgelaufen!</h2>
+        <div class="game-result-score" id="finalScore">0</div>
+        <p id="resultMessage"></p>
+        <button class="close-game-btn" onclick="closeGame()">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gameScore = 0;
+    let gameTime = 35;
+    let gameInterval;
+    let heartInterval;
+    let gameActive = false;
+    let winCount = 0; // <- neue Variable für aufeinanderfolgende Siege
+
+    function startGame() {
+      document.getElementById('gameModal').classList.add('active');
+      document.getElementById('gameResult').classList.remove('active');
+      gameScore = 0;
+      gameTime = 35;
+      gameActive = true;
+      document.getElementById('score').textContent = gameScore;
+      document.getElementById('timer').textContent = gameTime;
+
+      const gameArea = document.getElementById('gameArea');
+      gameArea.innerHTML = '<div class="basket" id="basket">🧺</div>';
+
+      gameInterval = setInterval(() => {
+        gameTime--;
+        document.getElementById('timer').textContent = gameTime;
+        if (gameTime <= 0) {
+          endGame();
+        }
+      }, 1000);
+
+      heartInterval = setInterval(() => {
+        if (gameActive) {
+          createFallingHeart();
+        }
+      }, 600);
+
+      document.getElementById('gameArea').addEventListener('mousemove', moveBasket);
+    }
+
+    function moveBasket(e) {
+      const basket = document.getElementById('basket');
+      const gameArea = document.getElementById('gameArea');
+      const rect = gameArea.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      x = Math.max(40, Math.min(x, rect.width - 40));
+      basket.style.left = x + 'px';
+    }
+
+    function createFallingHeart() {
+      const gameArea = document.getElementById('gameArea');
+      const heart = document.createElement('div');
+      heart.classList.add('game-heart');
+      heart.innerHTML = '♥';
+      heart.style.left = Math.random() * (gameArea.offsetWidth - 40) + 'px';
+      heart.style.top = '-40px';
+      gameArea.appendChild(heart);
+
+      const fallSpeed = 3 + Math.random() * 2;
+      let position = -40;
+
+      const fallInterval = setInterval(() => {
+        if (!gameActive) {
+          clearInterval(fallInterval);
+          heart.remove();
+          return;
+        }
+
+        position += fallSpeed;
+        heart.style.top = position + 'px';
+
+        const basket = document.getElementById('basket');
+        const heartRect = heart.getBoundingClientRect();
+        const basketRect = basket.getBoundingClientRect();
+
+        if (
+          heartRect.bottom >= basketRect.top &&
+          heartRect.top <= basketRect.bottom &&
+          heartRect.right >= basketRect.left &&
+          heartRect.left <= basketRect.right
+        ) {
+          gameScore++;
+          document.getElementById('score').textContent = gameScore;
+          heart.remove();
+          clearInterval(fallInterval);
+
+          const collectEffect = document.createElement('div');
+          collectEffect.style.position = 'absolute';
+          collectEffect.style.left = heartRect.left + 'px';
+          collectEffect.style.top = heartRect.top + 'px';
+          collectEffect.style.fontSize = '2em';
+          collectEffect.innerHTML = '+1';
+          collectEffect.style.color = '#2d4a3e';
+          collectEffect.style.fontWeight = 'bold';
+          collectEffect.style.pointerEvents = 'none';
+          collectEffect.style.animation = 'floatUp 1s ease-out forwards';
+          document.body.appendChild(collectEffect);
+          setTimeout(() => collectEffect.remove(), 1000);
+        }
+
+        if (position > gameArea.offsetHeight) {
+          heart.remove();
+          clearInterval(fallInterval);
+        }
+      }, 20);
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(gameInterval);
+      clearInterval(heartInterval);
+
+      document.getElementById('finalScore').textContent = gameScore + ' Punkte';
+
+      if (gameScore >= 50) {
+        winCount++;
+        if (winCount < 3) {
+          document.getElementById('resultTitle').textContent = 'Yippi';
+          document.getElementById('resultMessage').innerHTML =
+            'Die Runde gewonnen ❤️. <strong>' + winCount + '/3</strong> Siege. Du schaffst das :)';
+        } else {
+          document.getElementById('resultTitle').textContent = 'Yippiii';
+          document.getElementById('resultMessage').innerHTML =
+            'Du hast gewonnen. Du bekommst einen Gutschein einen Tag lang machen wir nur was du willst ❤️';
+          winCount = 0; // zurücksetzen für spätere Spiele
+        }
+      } else {
+        document.getElementById('resultTitle').textContent = '❤️‍🩹';
+        document.getElementById('resultMessage').innerHTML =
+          'Sorry ' + gameScore + ' Punkte sind noch genug. Noch mal von vorne';
+        winCount = 0;
+      }
+
+      document.getElementById('gameResult').classList.add('active');
+    }
+
+    function closeGame() {
+      document.getElementById('gameModal').classList.remove('active');
+      gameActive = false;
+      clearInterval(gameInterval);
+      clearInterval(heartInterval);
+    }
+  </script>
+</body>
+</html>
